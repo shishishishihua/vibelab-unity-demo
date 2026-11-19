@@ -12,7 +12,9 @@
 
 ### 运行层
 
-- 一个最小可运行的 Unity Demo
+- 一个下载后可直接在 Unity 里打开并运行的最小 Demo
+- 首次打开项目时会自动准备场景、Build Settings 和 Android 关键设置
+- 默认支持“打开项目后直接点 Play”这一条最短路径
 - 运行时自动生成场景，不依赖你手动摆物体
 - 支持键盘/鼠标控制视角与切换演示项
 - 画面上会展示规则摘要与当前状态
@@ -40,6 +42,7 @@
 - [工程目录](vibelab-unity-demo)
 - `Assets/Scripts/VibeLabDemoBootstrap.cs`：运行时场景生成与 HUD
 - `Assets/Scripts/VibeLabOrbitCamera.cs`：视角控制
+- `Assets/Editor/VibeLabQuickStart.cs`：首次打开项目时自动准备 Demo 并打开场景
 - `Assets/Editor/VibeLabAndroidExport.cs`：规则校验与导出菜单
 - `tools/prepare_exported_project.py`：导出后做基础合规清理
 
@@ -53,7 +56,22 @@
 - Android Build Support
 - 使用 Unity 自带 Android SDK / NDK / OpenJDK
 
+**开箱即用路径：**
+
+1. 下载或 clone 这个仓库
+2. 用 Unity 6 打开项目
+3. 等待首次导入完成
+4. 项目会自动准备 Demo 场景与 Android 关键设置
+5. 直接点击 Unity 顶部的 `Play` 就能跑起来
+
+如果 Unity 没有自动切到 Demo 场景，也可以手动使用：
+
+- `VibeLab/Open Demo Scene`
+
 ### 2. 执行菜单准备项目
+
+如果你只是想**先把 Demo 跑起来**，其实到上一步就够了。  
+这一节更偏向“我要开始导出 Android / 对齐提交流程”。
 
 Unity 顶部菜单：
 
