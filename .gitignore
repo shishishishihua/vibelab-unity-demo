@@ -6,3 +6,4 @@ local.properties
 *.log
 .cxx/
 *_BurstDebugInformation_DoNotShip/
+unityLibrary/symbols/
