@@ -1,4 +1,4 @@
-Enter file contents hereusing UnityEditor;
+using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 

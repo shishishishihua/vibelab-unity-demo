@@ -8,18 +8,24 @@ using UnityEngine;
 
 public static class VibeLabAndroidExport
 {
-    private const string SceneDirectory = "Assets/Scenes";
-    private const string ScenePath = SceneDirectory + "/VibeLabBootstrap.unity";
-    private const string DefaultPackageName = "com.vibelab.unitydemo";
+    public const string SceneDirectory = "Assets/Scenes";
+    public const string ScenePath = SceneDirectory + "/VibeLabBootstrap.unity";
+    public const string DefaultPackageName = "com.vibelab.unitydemo";
 
     [MenuItem("VibeLab/Prepare Demo Project")]
     public static void PrepareDemoProject()
     {
-        EnsureSceneExists();
-        ConfigureAndroidPlayerSettings();
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-        Debug.Log("[VibeLab] 项目准备完成：场景、Android Player Settings、Build Settings 已更新。");
+        PrepareDemoProjectInternal(openSceneAfterPrepare: false, verbose: true);
+    }
+
+    public static bool EnsureDemoProjectReady(bool openSceneAfterPrepare)
+    {
+        return PrepareDemoProjectInternal(openSceneAfterPrepare, verbose: false);
+    }
+
+    public static void OpenDemoScene()
+    {
+        PrepareDemoProjectInternal(openSceneAfterPrepare: true, verbose: false);
     }
 
     [MenuItem("VibeLab/Validate Submission Settings")]
@@ -100,52 +106,118 @@ public static class VibeLabAndroidExport
             "好的");
     }
 
-    private static void EnsureSceneExists()
+    private static bool PrepareDemoProjectInternal(bool openSceneAfterPrepare, bool verbose)
     {
+        var changed = false;
+        changed |= EnsureSceneExists();
+        changed |= ConfigureAndroidPlayerSettings();
+
+        if (openSceneAfterPrepare)
+        {
+            var activeScene = EditorSceneManager.GetActiveScene();
+            if (activeScene.path != ScenePath)
+            {
+                EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            }
+        }
+
+        if (changed)
+        {
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+
+        if (verbose)
+        {
+            Debug.Log("[VibeLab] 项目准备完成：场景、Android Player Settings、Build Settings 已更新。");
+        }
+
+        return changed;
+    }
+
+    private static bool EnsureSceneExists()
+    {
+        var changed = false;
+
         if (!Directory.Exists(SceneDirectory))
         {
             Directory.CreateDirectory(SceneDirectory);
+            changed = true;
         }
 
         if (!File.Exists(ScenePath))
         {
+            var previousScenePath = EditorSceneManager.GetActiveScene().path;
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var marker = new GameObject("VibeLabRuntimeScene");
             marker.transform.position = Vector3.zero;
             EditorSceneManager.SaveScene(scene, ScenePath);
+            changed = true;
+
+            if (!string.IsNullOrWhiteSpace(previousScenePath) && File.Exists(previousScenePath))
+            {
+                EditorSceneManager.OpenScene(previousScenePath, OpenSceneMode.Single);
+            }
         }
 
-        EditorBuildSettings.scenes = new[]
+        if (EditorBuildSettings.scenes.Length != 1 || EditorBuildSettings.scenes[0].path != ScenePath || !EditorBuildSettings.scenes[0].enabled)
         {
-            new EditorBuildSettingsScene(ScenePath, true)
-        };
+            EditorBuildSettings.scenes = new[]
+            {
+                new EditorBuildSettingsScene(ScenePath, true)
+            };
+            changed = true;
+        }
+
+        return changed;
     }
 
-    private static void ConfigureAndroidPlayerSettings()
+    private static bool ConfigureAndroidPlayerSettings()
     {
-        PlayerSettings.productName = "VibeLab Unity Demo";
-        PlayerSettings.companyName = "VibeLab";
-        PlayerSettings.bundleVersion = "1.0.0";
-        PlayerSettings.Android.bundleVersionCode = 1;
-        PlayerSettings.Android.useCustomKeystore = false;
-        PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, DefaultPackageName);
-        PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
-        PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
-        TrySetAllowedTargetSdk();
+        var changed = false;
+
+        changed |= AssignIfDifferent(() => PlayerSettings.productName, value => PlayerSettings.productName = value, "VibeLab Unity Demo");
+        changed |= AssignIfDifferent(() => PlayerSettings.companyName, value => PlayerSettings.companyName = value, "VibeLab");
+        changed |= AssignIfDifferent(() => PlayerSettings.bundleVersion, value => PlayerSettings.bundleVersion = value, "1.0.0");
+        changed |= AssignIfDifferent(() => PlayerSettings.Android.bundleVersionCode, value => PlayerSettings.Android.bundleVersionCode = value, 1);
+        changed |= AssignIfDifferent(() => PlayerSettings.Android.useCustomKeystore, value => PlayerSettings.Android.useCustomKeystore = value, false);
+        changed |= AssignIfDifferent(
+            () => PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.Android),
+            value => PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, value),
+            DefaultPackageName);
+        changed |= AssignIfDifferent(
+            () => PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android),
+            value => PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, value),
+            ScriptingImplementation.IL2CPP);
+        changed |= AssignIfDifferent(() => PlayerSettings.Android.targetArchitectures, value => PlayerSettings.Android.targetArchitectures = value, AndroidArchitecture.ARM64);
+
+        if (TryGetAllowedTargetSdk(out var targetSdk))
+        {
+            changed |= AssignIfDifferent(() => PlayerSettings.Android.targetSdkVersion, value => PlayerSettings.Android.targetSdkVersion = value, targetSdk);
+        }
+
+        return changed;
     }
 
-    private static void TrySetAllowedTargetSdk()
+    private static bool AssignIfDifferent<T>(Func<T> getter, Action<T> setter, T expected)
     {
-        if (TryGetSdkVersion("AndroidApiLevel36", out var sdk36))
+        if (Equals(getter(), expected))
         {
-            PlayerSettings.Android.targetSdkVersion = sdk36;
-            return;
+            return false;
         }
 
-        if (TryGetSdkVersion("AndroidApiLevel35", out var sdk35))
+        setter(expected);
+        return true;
+    }
+
+    private static bool TryGetAllowedTargetSdk(out AndroidSdkVersions version)
+    {
+        if (TryGetSdkVersion("AndroidApiLevel36", out version))
         {
-            PlayerSettings.Android.targetSdkVersion = sdk35;
+            return true;
         }
+
+        return TryGetSdkVersion("AndroidApiLevel35", out version);
     }
 
     private static bool TryGetSdkVersion(string enumName, out AndroidSdkVersions version)
