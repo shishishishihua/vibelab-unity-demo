@@ -1,17 +1,18 @@
 # VIBELAB_SUBMISSION_CHECKLIST
 
-## 已自动处理
-- 清空 `gradle.properties` 中的 `unityProjectPath` / `unity.projectPath`
-- 删除 `local.properties`
-- 补充导出仓库根目录 `.gitignore`
+## 已完成
+- 已清空 `gradle.properties` 中的 `unityProjectPath` / `unity.projectPath`
+- 已删除 `local.properties`
+- 已保留 Unity 6 导出的 `gradle/wrapper/gradle-wrapper.properties`，未补 `gradlew` / `gradlew.bat`
+- 已在本机完成 IL2CPP 预编译验证
+- 已在验证后删除 `unityLibrary/src/main/Il2CppOutputProject/`，避免云端误判为未预编译工程
+- 已在当前提交内容上完成 `:launcher:assembleRelease` 验证
 
-## 仍需你在本机继续做的事
-1. 按 Unity 导出规则确认：不要补 `gradlew` / `gradlew.bat`，这属于 Unity 6 导出时的正常现象。
-2. 在导出工程上执行 `:unityLibrary:buildIl2Cpp --rerun`，确保 IL2CPP 真正重编译，而不是 `SKIPPED` / `UP-TO-DATE` / `FROM-CACHE`。
-3. 在**完成验证之后**，如果需要禁用 `buildIl2Cpp`，应在相关 Gradle 文件末尾**追加**：
-   `tasks.named('buildIl2Cpp').configure { enabled = false }`
-4. 删除 `Il2CppOutputProject/` 之前先确认所有验证都已通过。
-5. 终验前显式设置 `ANDROID_HOME` / `ANDROID_SDK_ROOT`（指向 Unity 自带 Android SDK）。
-6. 最终执行 `:launcher:assembleRelease`，确认只产出唯一一个 release APK。
-7. 保留 `gradle/wrapper/gradle-wrapper.properties`，不要删除也不要改成私有源。
-8. 不要改动指向本机 Unity 安装目录的其他路径类配置；规则里唯一要求清空的是 `unityProjectPath` / `unity.projectPath`。
+## 当前仓库结构
+- 根目录为 Android Gradle 工程根
+- Application module 为 `launcher`
+- 预编译产物保留在 `unityLibrary/src/main/jniLibs/arm64-v8a/`
+- 仓库中不包含 `local.properties`、APK、`.gradle/`、根级 `build/`
+
+## 提交说明
+- 提交 VibeLab 时请使用当前 GitHub 仓库地址和对应的 40 位 commit id
