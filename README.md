@@ -1,6 +1,6 @@
 # VibeLab Unity Demo（按 VibeLab Unity 提交规则设计）
 
-这是一个**Unity 6 源码工程模板**，我把它做成了一个最小可演示的 3D Demo：启动后会生成一个简洁的空间场景、旋转展台和规则面板，并内置了 **VibeLab 规则校验 / 导出辅助菜单**。
+这是一个**Unity 6 源码工程模板**，我已经把它继续升级成更像正式产品演示的 3D Demo：启动后会生成带主舞台、品牌灯塔、能力展项和交付面板的空间化展示场景，并内置 **VibeLab 规则校验 / 导出辅助菜单**。
 
 先说明一个关键点：
 
@@ -12,12 +12,12 @@
 
 ### 运行层
 
-- 一个下载后可直接在 Unity 里打开并运行的最小 Demo
+- 一个下载后可直接在 Unity 里打开并运行、且更像正式产品演示的 Demo
 - 首次打开项目时会自动准备场景、Build Settings 和 Android 关键设置
 - 默认支持“打开项目后直接点 Play”这一条最短路径
-- 运行时自动生成场景，不依赖你手动摆物体
+- 场景升级为主舞台 + 品牌灯塔 + 三段式能力展项 + 交付看板
 - 支持键盘/鼠标控制视角与切换演示项
-- 画面上会展示规则摘要与当前状态
+- 画面上会展示规则摘要、状态信息与 CTA 交互反馈
 
 ### 导出层
 
@@ -40,7 +40,7 @@
 ## 目录结构
 
 - [工程目录](vibelab-unity-demo)
-- `Assets/Scripts/VibeLabDemoBootstrap.cs`：运行时场景生成与 HUD
+- `Assets/Scripts/VibeLabDemoBootstrap.cs`：运行时生成更像正式产品演示的空间舞台、展项与 HUD
 - `Assets/Scripts/VibeLabOrbitCamera.cs`：视角控制
 - `Assets/Editor/VibeLabQuickStart.cs`：首次打开项目时自动准备 Demo 并打开场景
 - `Assets/Editor/VibeLabAndroidExport.cs`：规则校验与导出菜单
@@ -62,7 +62,7 @@
 2. 用 Unity 6 打开项目
 3. 等待首次导入完成
 4. 项目会自动准备 Demo 场景与 Android 关键设置
-5. 直接点击 Unity 顶部的 `Play` 就能跑起来
+5. 直接点击 Unity 顶部的 `Play` 就能跑起来，更像正式产品演示页的空间舞台会自动生成
 
 如果 Unity 没有自动切到 Demo 场景，也可以手动使用：
 
