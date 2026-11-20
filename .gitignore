@@ -4,6 +4,6 @@ build/
 local.properties
 *.iml
 *.log
-.cxx/
 *_BurstDebugInformation_DoNotShip/
 unityLibrary/symbols/
+.cxx/
